@@ -26,3 +26,6 @@ main = do
     Right countryItems -> do
       putStr "Number of country items: "
       print (length countryItems)
+
+      Monad.void (encodeItemsToFile "countries.csv" countryItems)
+

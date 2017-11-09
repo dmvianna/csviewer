@@ -1,21 +1,23 @@
 name:                csviewer
 version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/githubuser/csviewer#readme
+synopsis:            Example code for parsing CSV files in Haskell
+description:         This is extracted from the tutorial found at
+                     https://www.stackbuilders.com/tutorials/haskell/csv-encoding-decoding/
+                     It follows the procedure for creating a workflow step-by-step.
+homepage:            https://github.com/dmvianna/csviewer#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
-category:            Web
+author:              Daniel Vianna
+maintainer:          dmvianna <at> gmail.com
+copyright:           2017 Daniel Vianna
+category:            Data
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
 
 executable csviewer
   hs-source-dirs:      src
-  main-is:             OpenData.hs
+  main-is:             Main.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5,
                        bytestring,

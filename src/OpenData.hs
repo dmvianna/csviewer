@@ -2,17 +2,17 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module OpenData
-  -- ( Item(..)
-  -- , ItemType(..)
-  -- , decodeItems
-  -- , decodeItemsFromFile
-  -- , encodeItems
-  -- , encodeItemsToFile
-  -- , filterCountryItems
-  -- , itemHeader
-  -- , japanItem
-  -- , japanRecord
-  -- )
+  ( Item(..)
+  , ItemType(..)
+  , decodeItems
+  , decodeItemsFromFile
+  , encodeItems
+  , encodeItemsToFile
+  , filterCountryItems
+  , itemHeader
+  , japanItem
+  , japanRecord
+  )
   where
 
 -- base
@@ -45,6 +45,8 @@ import qualified Data.Text.Encoding as Text
 import Data.Vector (Vector)
 import qualified Data.Vector as Vector
 
+-- decoding section
+
 data Item =
   Item
   { itemName :: Text
@@ -72,7 +74,7 @@ japanItem =
 instance FromNamedRecord Item where
   parseNamedRecord m =
     Item
-    <$> m .: "Item"
+    <$> fmap Text.decodeLatin1 (m .: "Item")
     <*> m .: "Link"
     <*> m .: "Type"
 
@@ -113,3 +115,72 @@ catchShowIO action =
       -> IO (Either String a)
     handleIOException =
       return . Left . show
+
+-- helper functions to perform
+-- some minimal data analysis
+
+filterCountryItems
+  :: Vector Item
+  -> Vector Item
+filterCountryItems =
+  Vector.filter isCountryItem
+
+isCountryItem
+  :: Item
+  -> Bool
+isCountryItem =
+  (==) Country . itemType
+
+-- encoding section
+
+instance ToNamedRecord Item where
+  toNamedRecord Item{..} =
+    Cassava.namedRecord
+    [ "Item" .= itemName
+    , "Link" .= itemLink
+    , "Type" .= itemType
+    ]
+
+instance ToField ItemType where
+  toField Country =
+    "International Country"
+
+  toField (Other otherType) =
+    toField otherType
+
+-- Cassava.encodeByName
+--   :: ToNamedRecord a
+--   => Header
+--   -> [a]
+--   --> ByteString
+
+itemHeader :: Header
+itemHeader =
+  Vector.fromList
+  [ "Item"
+  , "Link"
+  , "Type"
+  ]
+
+instance DefaultOrdered Item where
+  headerOrder _ =
+    Cassava.header
+    [ "Item"
+    , "Link"
+    , "Type"
+    ]
+
+encodeItems
+  :: Vector Item
+  -> ByteString
+encodeItems =
+  Cassava.encodeDefaultOrderedByName . Foldable.toList
+
+encodeItemsToFile
+  :: FilePath
+  -> Vector Item
+  -> IO (Either String ())
+encodeItemsToFile filePath =
+  catchShowIO . ByteString.writeFile filePath . encodeItems
+
+
